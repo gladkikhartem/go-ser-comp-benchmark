@@ -1,14 +1,17 @@
 ## Go Serialization + Compression benchmarks  (AI generated)
 
-This a benchmark of a combination of serialization and compression speed in Go.
-It may be useful to identify best combination of parameters for passing simple repetitive data for network-bounded environments (public internet, slow networks, etc)
+If you want to serialize and then compress data - what will be the most effective library to use?
 
-Benchmark is run with GOMAXPROCS=1 and results may be vastly different depending on the platform, so it's just for a reference only. Plus it's just AI written - so double check results you are interested in.
+This benchmarks tries to answer that question, which may be useful to for passing simple repetitive data over network-bounded environments (public internet, slow networks, etc)
+
+Benchmark is run with GOMAXPROCS=1 and results may be vastly different depending on the platform, so it's just for a reference only. Plus it's just AI written in few hours and sample data is limited. You probably want to do more robust benchmark for best candidates on the real-world data for your specific use-case.
 
 Compression ratio is calculated relative to the size of Go struct fields.
 Compressed struct contains is not only the data itself, but also wrapper envelope.
 
-Full benchmarks are located in full_results.txt
+So far github.com/hamba/avro/v2 + github.com/klauspost/compress/zstd provide the best balance between compression size and speed
+
+Full benchmarks results without exclusion of 'slow' libraries are located in full_results.txt
 ```go
 
 type Book struct {
@@ -30,157 +33,138 @@ type Payload struct {
 }
 ```
 
+Fast And Compact
 ```bash
-Performing initial speed check (None compression)...
+ID                             | Ratio (%)  | Speed      | Ser+Comp   | De+Deser   | Status    
+------------------------------------------------------------------------------------------
+Avro/ZstdFastest/len=100  | 43.37      | 127.99     | 194.28     | 375.09     | OK        
+ShamatonMsgPack/ZstdFastest/len=100 | 49.40      | 73.19      | 126.50     | 173.68     | OK        
+Msgp/ZstdFastest/len=100  | 49.40      | 96.71      | 160.30     | 243.81     | OK        
+UgorjiCBOR/ZstdFastest/len=100 | 49.40      | 57.59      | 106.46     | 125.43     | OK        
+UgorjiBinc/ZstdFastest/len=100 | 50.60      | 57.26      | 99.07      | 135.69     | OK        
+UgorjiMsgPack/ZstdFastest/len=100 | 50.60      | 59.99      | 107.11     | 136.36     | OK        
+UgorjiSimple/ZstdFastest/len=100 | 50.60      | 57.65      | 99.19      | 137.66     | OK        
+Avro/Snappy/len=100       | 53.01      | 146.35     | 281.46     | 304.88     | OK        
+Avro/StdSnappy/len=100    | 54.22      | 276.09     | 494.12     | 625.69     | OK        
+Avro/Lz4/len=100          | 55.42      | 149.28     | 264.67     | 342.42     | OK        
+Avro/S2/len=100           | 55.42      | 296.76     | 558.42     | 633.33     | OK        
+Sonic/Snappy/len=100      | 62.65      | 54.51      | 110.92     | 107.19     | OK        
+JsonIterFastest/Snappy/len=100 | 62.65      | 51.27      | 154.76     | 76.68      | OK        
+EasyJSON/Snappy/len=100   | 62.65      | 68.00      | 152.94     | 122.43     | OK        
+Msgp/Snappy/len=100       | 63.86      | 152.53     | 268.32     | 353.46     | OK        
+ShamatonMsgPack/Snappy/len=100 | 63.86      | 104.77     | 191.22     | 231.76     | OK        
+MsgPack/Snappy/len=100    | 63.86      | 67.12      | 158.14     | 116.63     | OK        
+UgorjiSimple/Snappy/len=100 | 65.06      | 75.29      | 130.67     | 177.64     | OK        
+Sonic/S2/len=100          | 65.06      | 61.02      | 157.55     | 99.59      | OK        
+UgorjiBinc/Snappy/len=100 | 65.06      | 73.19      | 131.28     | 165.41     | OK        
+EasyJSON/S2/len=100       | 65.06      | 82.14      | 209.73     | 135.01     | OK        
+JsonIterFastest/Lz4/len=100 | 65.06      | 50.10      | 165.48     | 71.86      | OK        
+JsonIterFastest/S2/len=100 | 65.06      | 51.56      | 185.58     | 71.40      | OK        
+JsonIter/S2/len=100       | 65.06      | 58.17      | 210.55     | 80.38      | OK        
+GoccyJSON/S2/len=100      | 65.06      | 50.01      | 106.94     | 93.95      | OK        
+UgorjiMsgPack/Snappy/len=100 | 65.06      | 83.39      | 156.53     | 178.45     | OK        
+CBORCanonical/Snappy/len=100 | 65.06      | 63.62      | 179.59     | 98.51      | OK        
+Sonic/Lz4/len=100         | 65.06      | 55.39      | 132.86     | 94.98      | OK        
+CBOR/Snappy/len=100       | 65.06      | 63.01      | 188.02     | 94.76      | OK        
+UgorjiCBOR/Snappy/len=100 | 65.06      | 76.49      | 151.63     | 154.36     | OK        
+EasyJSON/Lz4/len=100      | 65.06      | 60.80      | 150.18     | 102.17     | OK        
+UgorjiSimple/StdSnappy/len=100 | 66.27      | 86.34      | 166.97     | 178.77     | OK        
+EasyJSON/StdSnappy/len=100 | 66.27      | 80.18      | 221.41     | 125.70     | OK        
+Sonic/StdSnappy/len=100   | 66.27      | 67.69      | 171.23     | 111.95     | OK        
+Msgp/Lz4/len=100          | 66.27      | 120.02     | 252.90     | 228.44     | OK        
+Msgp/StdSnappy/len=100    | 66.27      | 188.68     | 394.37     | 361.77     | OK        
+JsonIterFastest/StdSnappy/len=100 | 66.27      | 51.34      | 183.18     | 71.33      | OK        
+ShamatonMsgPack/Lz4/len=100 | 66.27      | 86.48      | 168.10     | 178.09     | OK        
+JsonIter/StdSnappy/len=100 | 66.27      | 54.77      | 184.19     | 77.96      | OK        
+MsgPack/StdSnappy/len=100 | 66.27      | 71.03      | 177.31     | 118.49     | OK        
+UgorjiMsgPack/StdSnappy/len=100 | 66.27      | 95.64      | 198.58     | 184.50     | OK        
+MsgPack/Lz4/len=100       | 66.27      | 57.98      | 140.16     | 98.88      | OK        
+ShamatonMsgPack/StdSnappy/len=100 | 66.27      | 115.64     | 239.84     | 223.31     | OK        
+UgorjiMsgPack/Lz4/len=100 | 67.47      | 78.98      | 166.21     | 150.50     | OK        
+CBOR/StdSnappy/len=100    | 67.47      | 65.74      | 203.15     | 97.19      | OK        
+CBORCanonical/StdSnappy/len=100 | 67.47      | 65.74      | 234.32     | 91.38      | OK        
+MsgPack/S2/len=100        | 67.47      | 73.90      | 179.30     | 125.71     | OK        
+CBOR/S2/len=100           | 67.47      | 64.13      | 230.21     | 88.90      | OK        
+CBOR/Lz4/len=100          | 67.47      | 55.84      | 172.91     | 82.47      | OK        
+UgorjiMsgPack/S2/len=100  | 67.47      | 93.93      | 218.58     | 164.70     | OK        
+CBORCanonical/Lz4/len=100 | 67.47      | 57.31      | 174.67     | 85.31      | OK        
+CBORCanonical/S2/len=100  | 67.47      | 73.91      | 244.18     | 106.00     | OK        
+UgorjiSimple/Lz4/len=100  | 67.47      | 69.34      | 139.35     | 138.02     | OK        
+UgorjiSimple/S2/len=100   | 67.47      | 84.36      | 162.37     | 175.58     | OK        
+ShamatonMsgPack/S2/len=100 | 67.47      | 108.81     | 247.97     | 193.89     | OK        
+UgorjiCBOR/S2/len=100     | 67.47      | 88.47      | 188.41     | 166.79     | OK        
+UgorjiCBOR/Lz4/len=100    | 67.47      | 74.58      | 162.75     | 137.65     | OK        
+UgorjiCBOR/StdSnappy/len=100 | 67.47      | 90.97      | 196.56     | 169.35     | OK        
+UgorjiBinc/StdSnappy/len=100 | 67.47      | 81.68      | 158.07     | 169.02     | OK        
+UgorjiBinc/Lz4/len=100    | 67.47      | 67.36      | 132.91     | 136.58     | OK        
+Msgp/S2/len=100           | 67.47      | 175.78     | 382.80     | 325.03     | OK        
+UgorjiBinc/S2/len=100     | 67.47      | 92.04      | 188.54     | 179.84     | OK        
+Avro/StdSnappy/len=5      | 90.48      | 229.93     | 400.74     | 539.44     | OK        
+Avro/S2/len=5             | 90.48      | 152.94     | 323.03     | 290.48     | OK        
+Avro/Snappy/len=5         | 92.86      | 154.98     | 283.49     | 341.90     | OK        
+Avro/Lz4/len=5            | 94.05      | 93.12      | 167.80     | 209.25     | OK        
+Avro/None/len=100         | 98.80      | 421.43     | 1033.41    | 711.63     | OK        
+Avro/None/len=5           | 100.00     | 398.75     | 918.60     | 704.61     | OK  
+...
+```
 
-Excluded Marshalers (Speed < 20MB/s with None compression):
-- YAML (2.80 MB/s)
-- TOML (9.37 MB/s)
-- Bencode (8.12 MB/s)
-- XML (6.09 MB/s)
-- GoccyYAML (1.31 MB/s)
-- BurntSushiTOML (3.71 MB/s)
-- GoAvro (10.34 MB/s)
 
-Performing Avro speed check with all compressors...
-Excluded Compressors (Speed < 10MB/s with Avro):
-- Pzip (4.20 MB/s)
-- Brotli (8.13 MB/s)
-- XZ (1.04 MB/s)
-- Bzip2 (4.89 MB/s)
-
-Running benchmarks...
-
-Excluded 267 results with speed < 50MB/s
-ID                        | OrigSize   | MarshSize  | CompSize   | Speed      | Ser+Comp   | De+Deser   | Status    
--------------------------------------------------------------------------------------------------------------------
-Avro/ZstdFastest/100      | 83         | 82         | 36         | 133.64     | 203.96     | 387.59     | OK        
-EasyJSON/ZstdFastest/100  | 83         | 187        | 39         | 57.18      | 123.79     | 106.27     | OK        
-Msgp/ZstdFastest/100      | 83         | 156        | 41         | 95.98      | 158.13     | 244.20     | OK        
-CBORCanonical/ZstdFastest/100 | 83         | 160        | 41         | 51.63      | 126.23     | 87.36      | OK        
-MsgPack/ZstdFastest/100   | 83         | 156        | 41         | 51.65      | 107.31     | 99.57      | OK        
-CBOR/ZstdFastest/100      | 83         | 160        | 41         | 52.52      | 119.49     | 93.72      | OK        
-ShamatonMsgPack/ZstdFastest/100 | 83         | 156        | 41         | 69.23      | 121.60     | 160.75     | OK        
-UgorjiCBOR/ZstdFastest/100 | 83         | 160        | 41         | 58.11      | 101.66     | 135.66     | OK        
-UgorjiMsgPack/ZstdFastest/100 | 83         | 159        | 42         | 60.31      | 112.53     | 129.95     | OK        
-UgorjiSimple/ZstdFastest/100 | 83         | 173        | 42         | 59.84      | 104.33     | 140.34     | OK        
-UgorjiBinc/ZstdFastest/100 | 83         | 164        | 42         | 60.56      | 104.79     | 143.51     | OK        
-Avro/Snappy/100           | 83         | 82         | 44         | 168.16     | 297.01     | 387.64     | OK        
-Avro/StdSnappy/100        | 83         | 82         | 45         | 223.55     | 377.96     | 547.21     | OK        
-Avro/S2/100               | 83         | 82         | 46         | 301.88     | 568.93     | 643.12     | OK        
-Avro/Lz4/100              | 83         | 82         | 46         | 167.60     | 291.55     | 394.23     | OK        
-EasyJSON/Snappy/100       | 83         | 187        | 52         | 65.55      | 141.83     | 121.87     | OK        
-Sonic/Snappy/100          | 83         | 187        | 52         | 54.26      | 127.10     | 94.69      | OK        
-ShamatonMsgPack/Snappy/100 | 83         | 156        | 53         | 98.42      | 192.01     | 201.93     | OK        
-Msgp/Snappy/100           | 83         | 156        | 53         | 144.23     | 258.89     | 325.66     | OK        
-MsgPack/Snappy/100        | 83         | 156        | 53         | 74.61      | 164.17     | 136.77     | OK        
-UgorjiMsgPack/Snappy/100  | 83         | 159        | 53         | 86.41      | 167.89     | 178.04     | OK        
-GoccyJSON/S2/100          | 83         | 187        | 54         | 50.68      | 109.75     | 94.15      | OK        
-JsonIter/S2/100           | 83         | 187        | 54         | 58.22      | 230.12     | 77.94      | OK        
-JsonIterFastest/S2/100    | 83         | 187        | 54         | 58.41      | 226.56     | 78.71      | OK        
-Sonic/StdSnappy/100       | 83         | 187        | 54         | 66.32      | 157.17     | 114.73     | OK        
-Sonic/Lz4/100             | 83         | 187        | 54         | 54.04      | 129.61     | 92.67      | OK        
-Sonic/S2/100              | 83         | 187        | 54         | 64.24      | 172.29     | 102.43     | OK        
-UgorjiCBOR/Snappy/100     | 83         | 160        | 54         | 85.17      | 167.01     | 173.80     | OK        
-JsonIter/StdSnappy/100    | 83         | 187        | 54         | 60.12      | 220.31     | 82.69      | OK        
-JsonIter/Lz4/100          | 83         | 187        | 54         | 51.24      | 177.86     | 71.97      | OK        
-GoccyJSON/StdSnappy/100   | 83         | 187        | 54         | 51.70      | 107.94     | 99.24      | OK        
-UgorjiBinc/Snappy/100     | 83         | 164        | 54         | 73.69      | 134.48     | 162.99     | OK        
-UgorjiSimple/Snappy/100   | 83         | 173        | 54         | 69.33      | 118.83     | 166.43     | OK        
-EasyJSON/S2/100           | 83         | 187        | 54         | 80.24      | 245.03     | 119.30     | OK        
-EasyJSON/Lz4/100          | 83         | 187        | 54         | 66.04      | 180.86     | 104.01     | OK        
-JsonIterFastest/StdSnappy/100 | 83         | 187        | 54         | 53.33      | 196.30     | 73.23      | OK        
-EasyJSON/StdSnappy/100    | 83         | 187        | 54         | 80.63      | 212.22     | 130.03     | OK        
-CBOR/Snappy/100           | 83         | 160        | 54         | 67.89      | 192.77     | 104.80     | OK        
-CBORCanonical/Snappy/100  | 83         | 160        | 54         | 61.03      | 163.03     | 97.55      | OK        
-UgorjiCBOR/StdSnappy/100  | 83         | 160        | 55         | 93.64      | 200.46     | 175.71     | OK        
-Msgp/Lz4/100              | 83         | 156        | 55         | 129.10     | 273.24     | 244.71     | OK        
-ShamatonMsgPack/S2/100    | 83         | 156        | 55         | 105.74     | 240.77     | 188.53     | OK        
-ShamatonMsgPack/Lz4/100   | 83         | 156        | 55         | 91.18      | 185.37     | 179.44     | OK        
-ShamatonMsgPack/StdSnappy/100 | 83         | 156        | 55         | 116.74     | 243.45     | 224.29     | OK        
-UgorjiSimple/StdSnappy/100 | 83         | 173        | 55         | 86.76      | 172.20     | 174.85     | OK        
-UgorjiMsgPack/StdSnappy/100 | 83         | 159        | 55         | 94.04      | 204.90     | 173.80     | OK        
-Msgp/S2/100               | 83         | 156        | 55         | 165.02     | 407.61     | 277.27     | OK        
-UgorjiSimple/S2/100       | 83         | 173        | 55         | 94.53      | 196.26     | 182.37     | OK        
-MsgPack/S2/100            | 83         | 156        | 55         | 74.18      | 198.80     | 118.35     | OK        
-MsgPack/Lz4/100           | 83         | 156        | 55         | 63.45      | 154.06     | 107.89     | OK        
-UgorjiBinc/StdSnappy/100  | 83         | 164        | 55         | 80.05      | 167.55     | 153.28     | OK        
-MsgPack/StdSnappy/100     | 83         | 156        | 55         | 72.34      | 179.49     | 121.18     | OK        
-Msgp/StdSnappy/100        | 83         | 156        | 55         | 201.11     | 441.02     | 369.68     | OK        
-CBOR/StdSnappy/100        | 83         | 160        | 55         | 68.90      | 240.23     | 96.60      | OK        
-UgorjiCBOR/Lz4/100        | 83         | 160        | 56         | 75.60      | 164.04     | 140.21     | OK        
-CBOR/Lz4/100              | 83         | 160        | 56         | 63.27      | 183.45     | 96.57      | OK        
-UgorjiBinc/S2/100         | 83         | 164        | 56         | 93.23      | 203.71     | 171.89     | OK        
-UgorjiBinc/Lz4/100        | 83         | 164        | 56         | 75.41      | 148.93     | 152.77     | OK        
-CBORCanonical/StdSnappy/100 | 83         | 160        | 56         | 76.45      | 227.97     | 115.03     | OK        
-CBOR/S2/100               | 83         | 160        | 56         | 72.95      | 256.51     | 101.94     | OK        
-CBORCanonical/Lz4/100     | 83         | 160        | 56         | 59.17      | 169.32     | 90.95      | OK        
-CBORCanonical/S2/100      | 83         | 160        | 56         | 70.19      | 232.30     | 100.58     | OK        
-UgorjiMsgPack/S2/100      | 83         | 159        | 56         | 88.24      | 202.15     | 156.60     | OK        
-UgorjiMsgPack/Lz4/100     | 83         | 159        | 56         | 74.89      | 150.56     | 148.99     | OK        
-UgorjiSimple/Lz4/100      | 83         | 173        | 56         | 72.58      | 145.84     | 144.48     | OK        
-UgorjiCBOR/S2/100         | 83         | 160        | 56         | 90.79      | 190.56     | 173.40     | OK        
-BSON/StdSnappy/100        | 83         | 200        | 65         | 50.10      | 130.39     | 81.35      | OK        
-Avro/None/100             | 83         | 82         | 82         | 456.32     | 1110.53    | 774.61     | OK        
-Avro/None/1               | 90         | 94         | 94         | 128.70     | 274.20     | 242.54     | OK        
-Avro/StdSnappy/1          | 90         | 94         | 96         | 142.97     | 257.13     | 321.99     | OK        
-Avro/S2/1                 | 90         | 94         | 97         | 64.42      | 112.25     | 151.21     | OK        
-Avro/ZstdFastest/1        | 90         | 94         | 107        | 77.93      | 135.98     | 182.54     | OK        
-Msgp/None/100             | 83         | 156        | 156        | 354.52     | 1331.21    | 483.20     | OK        
-MsgPack/None/100          | 83         | 156        | 156        | 96.39      | 278.31     | 147.46     | OK        
-ShamatonMsgPack/None/100  | 83         | 156        | 156        | 146.11     | 355.86     | 247.89     | OK        
-UgorjiMsgPack/None/100    | 83         | 159        | 159        | 115.04     | 284.87     | 192.96     | OK        
-CBORCanonical/None/100    | 83         | 160        | 160        | 80.69      | 407.02     | 100.64     | OK        
-CBOR/None/100             | 83         | 160        | 160        | 95.64      | 441.46     | 122.09     | OK        
-UgorjiCBOR/None/100       | 83         | 160        | 160        | 136.23     | 380.16     | 212.31     | OK        
-UgorjiBinc/None/100       | 83         | 164        | 164        | 122.97     | 298.08     | 209.33     | OK        
-UgorjiSimple/None/100     | 83         | 173        | 173        | 82.86      | 167.34     | 164.15     | OK        
-Msgp/None/1               | 90         | 180        | 180        | 274.92     | 845.94     | 407.27     | OK        
-ShamatonMsgPack/None/1    | 90         | 180        | 180        | 85.75      | 172.76     | 170.27     | OK        
-MsgPack/None/1            | 90         | 180        | 180        | 56.03      | 158.10     | 86.78      | OK        
-ShamatonMsgPack/Snappy/1  | 90         | 180        | 184        | 65.96      | 114.34     | 155.89     | OK        
-Msgp/StdSnappy/1          | 90         | 180        | 184        | 166.21     | 327.46     | 337.54     | OK        
-CBOR/None/1               | 90         | 184        | 184        | 59.48      | 220.98     | 81.38      | OK        
-ShamatonMsgPack/StdSnappy/1 | 90         | 180        | 184        | 71.86      | 134.13     | 154.77     | OK        
-CBORCanonical/None/1      | 90         | 184        | 184        | 71.30      | 282.00     | 95.42      | OK        
-UgorjiCBOR/None/1         | 90         | 184        | 184        | 75.17      | 173.59     | 132.59     | OK        
-UgorjiMsgPack/None/1      | 90         | 184        | 184        | 71.01      | 160.06     | 127.64     | OK        
-ShamatonMsgPack/S2/1      | 90         | 180        | 184        | 70.94      | 127.22     | 160.36     | OK        
-Msgp/Snappy/1             | 90         | 180        | 184        | 140.15     | 248.74     | 321.05     | OK        
-Msgp/S2/1                 | 90         | 180        | 184        | 159.86     | 306.04     | 334.70     | OK        
-JsonIterFastest/None/100  | 83         | 187        | 187        | 71.21      | 407.14     | 86.30      | OK        
-JsonIter/None/100         | 83         | 187        | 187        | 67.13      | 350.94     | 83.01      | OK        
-EasyJSON/None/100         | 83         | 187        | 187        | 114.24     | 427.53     | 155.89     | OK        
-GoccyJSON/None/100        | 83         | 187        | 187        | 58.59      | 123.04     | 111.86     | OK        
-Sonic/None/100            | 83         | 187        | 187        | 77.00      | 234.14     | 114.74     | OK        
-CBOR/StdSnappy/1          | 90         | 184        | 188        | 58.22      | 168.48     | 88.96      | OK        
-UgorjiCBOR/S2/1           | 90         | 184        | 188        | 61.32      | 123.43     | 121.84     | OK        
-UgorjiMsgPack/StdSnappy/1 | 90         | 184        | 188        | 63.67      | 132.09     | 122.93     | OK        
-UgorjiCBOR/Snappy/1       | 90         | 184        | 188        | 58.94      | 114.69     | 121.24     | OK        
-CBORCanonical/Snappy/1    | 90         | 184        | 188        | 55.87      | 145.84     | 90.56      | OK        
-CBOR/Snappy/1             | 90         | 184        | 188        | 55.99      | 148.17     | 90.00      | OK        
-UgorjiMsgPack/Snappy/1    | 90         | 184        | 188        | 57.62      | 111.54     | 119.21     | OK        
-UgorjiCBOR/StdSnappy/1    | 90         | 184        | 188        | 61.39      | 128.03     | 117.93     | OK        
-CBORCanonical/S2/1        | 90         | 184        | 188        | 59.54      | 168.43     | 92.09      | OK        
-UgorjiMsgPack/S2/1        | 90         | 184        | 188        | 62.87      | 125.85     | 125.64     | OK        
-CBOR/S2/1                 | 90         | 184        | 188        | 59.69      | 171.71     | 91.50      | OK        
-CBORCanonical/StdSnappy/1 | 90         | 184        | 188        | 55.22      | 168.79     | 82.08      | OK        
-UgorjiBinc/None/1         | 90         | 189        | 189        | 73.74      | 162.76     | 134.83     | OK        
-UgorjiBinc/StdSnappy/1    | 90         | 189        | 193        | 61.25      | 122.96     | 122.06     | OK        
-UgorjiBinc/Snappy/1       | 90         | 189        | 193        | 57.06      | 108.35     | 120.55     | OK        
-ShamatonMsgPack/ZstdFastest/1 | 90         | 180        | 193        | 52.24      | 90.49      | 123.55     | OK        
-UgorjiBinc/S2/1           | 90         | 189        | 193        | 60.16      | 115.60     | 125.47     | OK        
-Msgp/Lz4/1                | 90         | 180        | 199        | 54.80      | 94.41      | 130.60     | OK        
-BSON/None/100             | 83         | 200        | 200        | 61.37      | 200.08     | 88.53      | OK        
-UgorjiSimple/None/1       | 90         | 203        | 203        | 73.38      | 166.12     | 131.45     | OK        
-UgorjiSimple/StdSnappy/1  | 90         | 203        | 206        | 60.75      | 117.50     | 125.76     | OK        
-UgorjiSimple/Snappy/1     | 90         | 203        | 207        | 58.51      | 109.58     | 125.57     | OK        
-UgorjiSimple/S2/1         | 90         | 203        | 207        | 61.09      | 118.31     | 126.30     | OK        
-JsonIterFastest/None/1    | 90         | 218        | 218        | 50.54      | 184.60     | 69.59      | OK        
-Sonic/None/1              | 90         | 218        | 218        | 54.61      | 126.83     | 95.91      | OK        
-EasyJSON/None/1           | 90         | 218        | 218        | 90.42      | 237.03     | 146.18     | OK        
-EasyJSON/StdSnappy/1      | 90         | 218        | 220        | 64.71      | 134.63     | 124.60     | OK        
-EasyJSON/S2/1             | 90         | 218        | 222        | 72.54      | 152.68     | 138.20     | OK        
-EasyJSON/Snappy/1         | 90         | 218        | 222        | 66.27      | 133.93     | 131.18     | OK        
-EasyJSON/ZstdFastest/1    | 90         | 218        | 231        | 53.94      | 105.00     | 110.92     | OK
+Most Compact
+```bash
+ID                             | Ratio (%)  | Speed      | Ser+Comp   | De+Deser   | Status    
+------------------------------------------------------------------------------------------
+Avro/Brotli/len=100       | 38.55      | 12.13      | 13.73      | 104.44     | OK        
+GoAvro/Brotli/len=100     | 38.55      | 5.83       | 8.64       | 17.92      | OK        
+GoAvro/XZ/len=100         | 39.76      | 0.87       | 1.11       | 4.16       | OK        
+Avro/XZ/len=100           | 39.76      | 0.94       | 1.14       | 5.44       | OK        
+JsonIter/Brotli/len=100   | 40.96      | 7.64       | 9.69       | 36.15      | OK        
+Sonic/Brotli/len=100      | 40.96      | 8.66       | 10.42      | 51.36      | OK        
+GoAvro/ZstdBest/len=100   | 40.96      | 9.02       | 15.36      | 21.84      | OK        
+GoAvro/Flate/len=100      | 40.96      | 8.22       | 14.84      | 18.45      | OK        
+GoAvro/Zlib/len=100       | 40.96      | 8.43       | 15.48      | 18.52      | OK        
+JSON/Brotli/len=100       | 40.96      | 6.96       | 9.16       | 28.93      | OK        
+GoccyJSON/Brotli/len=100  | 40.96      | 8.26       | 10.01      | 47.39      | OK        
+GoAvro/Pzip/len=100       | 40.96      | 4.40       | 8.41       | 9.21       | OK        
+GoAvro/Gzip/len=100       | 40.96      | 8.21       | 14.47      | 18.97      | OK        
+GoccyYAML/Brotli/len=100  | 40.96      | 1.53       | 2.78       | 3.40       | OK        
+SegmentioJSON/Brotli/len=100 | 40.96      | 6.76       | 8.81       | 29.15      | OK        
+Avro/Gzip/len=100         | 40.96      | 26.59      | 32.47      | 146.77     | OK        
+Avro/Pzip/len=100         | 40.96      | 6.97       | 13.06      | 14.97      | OK        
+Avro/Zlib/len=100         | 40.96      | 29.15      | 37.38      | 132.31     | OK        
+Avro/Flate/len=100        | 40.96      | 29.54      | 36.77      | 150.36     | OK        
+Avro/ZstdBest/len=100     | 40.96      | 40.38      | 46.45      | 308.59     | OK        
+JsonIterFastest/Brotli/len=100 | 40.96      | 8.56       | 10.79      | 41.43      | OK        
+EasyJSON/Brotli/len=100   | 40.96      | 8.79       | 10.44      | 55.82      | OK        
+BurntSushiTOML/Brotli/len=100 | 42.17      | 2.84       | 4.75       | 7.08       | OK        
+XML/Brotli/len=100        | 42.17      | 3.95       | 7.85       | 7.94       | OK        
+GoAvro/Zstd/len=100       | 42.17      | 7.42       | 11.96      | 19.51      | OK        
+YAML/Brotli/len=100       | 42.17      | 2.52       | 4.44       | 5.86       | OK        
+Avro/Zstd/len=100         | 42.17      | 21.73      | 24.46      | 194.80     | OK        
+TOML/Brotli/len=100       | 42.17      | 4.88       | 6.14       | 23.77      | OK        
+UgorjiBinc/Brotli/len=100 | 43.37      | 9.21       | 10.72      | 65.21      | OK        
+BurntSushiTOML/XZ/len=100 | 43.37      | 0.83       | 1.08       | 3.56       | OK        
+JSON/XZ/len=100           | 43.37      | 0.88       | 1.09       | 4.45       | OK        
+Msgp/Brotli/len=100       | 43.37      | 9.67       | 10.95      | 82.33      | OK        
+MsgPack/Brotli/len=100    | 43.37      | 8.99       | 10.81      | 53.43      | OK        
+TOML/XZ/len=100           | 43.37      | 0.79       | 0.98       | 3.99       | OK        
+UgorjiCBOR/Brotli/len=100 | 43.37      | 8.86       | 10.32      | 62.43      | OK        
+UgorjiSimple/Brotli/len=100 | 43.37      | 9.15       | 10.62      | 65.92      | OK        
+EasyJSON/XZ/len=100       | 43.37      | 0.86       | 1.07       | 4.56       | OK        
+ShamatonMsgPack/Brotli/len=100 | 43.37      | 9.77       | 11.30      | 71.76      | OK        
+SegmentioJSON/XZ/len=100  | 43.37      | 0.88       | 1.10       | 4.49       | OK        
+UgorjiMsgPack/Brotli/len=100 | 43.37      | 8.79       | 10.19      | 63.86      | OK        
+CBOR/Brotli/len=100       | 43.37      | 9.07       | 11.04      | 50.81      | OK        
+GoccyYAML/ZstdBest/len=100 | 43.37      | 1.67       | 3.25       | 3.45       | OK        
+CBORCanonical/Brotli/len=100 | 43.37      | 9.37       | 11.49      | 50.70      | OK        
+Avro/ZstdFastest/len=100  | 43.37      | 115.28     | 192.42     | 287.59     | OK        
+GoccyYAML/XZ/len=100      | 43.37      | 0.59       | 0.84       | 1.96       | OK        
+JsonIter/XZ/len=100       | 43.37      | 0.84       | 1.07       | 3.90       | OK        
+GoAvro/ZstdFastest/len=100 | 43.37      | 11.42      | 23.69      | 22.03      | OK        
+JsonIterFastest/XZ/len=100 | 43.37      | 0.92       | 1.15       | 4.56       | OK        
+GoccyJSON/XZ/len=100      | 43.37      | 0.90       | 1.12       | 4.49       | OK        
+Sonic/XZ/len=100          | 43.37      | 0.84       | 1.04       | 4.56       | OK        
+JsonIter/Gzip/len=100     | 44.58      | 16.89      | 26.38      | 46.95      | OK        
+YAML/ZstdBest/len=100     | 44.58      | 3.07       | 5.54       | 6.88       | OK        
+JSON/Gzip/len=100         | 44.58      | 13.31      | 21.93      | 33.89      | OK
+...
 ```
