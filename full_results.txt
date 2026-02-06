@@ -1,0 +1,20 @@
+Performing initial speed check (None compression)...
+
+Excluded Marshalers (Speed < 20MB/s with None compression):
+- YAML (2.28 MB/s)
+- TOML (8.73 MB/s)
+- Bencode (7.77 MB/s)
+- XML (6.59 MB/s)
+- GoccyYAML (1.25 MB/s)
+- BurntSushiTOML (3.49 MB/s)
+- GoAvro (9.69 MB/s)
+
+Performing Avro speed check with all compressors...
+Excluded Compressors (Speed < 10MB/s with Avro):
+- Pzip (3.81 MB/s)
+- Zstd (9.39 MB/s)
+- Brotli (7.60 MB/s)
+- XZ (0.98 MB/s)
+- Bzip2 (4.76 MB/s)
+
+Running benchmarks...
