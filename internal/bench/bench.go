@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	ddzstd "github.com/DataDog/zstd"
 	"github.com/andybalholm/brotli"
 	"github.com/bytedance/sonic"
 	"github.com/clbanning/mxj/v2"
@@ -40,6 +41,7 @@ import (
 	shamatonmsgpack "github.com/shamaton/msgpack/v2"
 	"github.com/ugorji/go/codec"
 	"github.com/ulikunitz/xz"
+	"github.com/valyala/gozstd"
 	"github.com/vmihailenco/msgpack/v5"
 	"github.com/zeebo/bencode"
 	"go.mongodb.org/mongo-driver/bson"
@@ -780,6 +782,66 @@ func (c Bzip2Compressor) Decompress(data []byte) ([]byte, error) {
 	return io.ReadAll(r)
 }
 
+type GozstdCompressorBest struct{}
+
+func (c GozstdCompressorBest) Name() string { return "GozstdBest" }
+func (c GozstdCompressorBest) Compress(data []byte) ([]byte, error) {
+	return gozstd.CompressLevel(nil, data, 20), nil
+}
+func (c GozstdCompressorBest) Decompress(data []byte) ([]byte, error) {
+	return gozstd.Decompress(nil, data)
+}
+
+type GozstdCompressorFastest struct{}
+
+func (c GozstdCompressorFastest) Name() string { return "GozstdFastest" }
+func (c GozstdCompressorFastest) Compress(data []byte) ([]byte, error) {
+	return gozstd.CompressLevel(nil, data, 1), nil
+}
+func (c GozstdCompressorFastest) Decompress(data []byte) ([]byte, error) {
+	return gozstd.Decompress(nil, data)
+}
+
+type GozstdCompressor struct{}
+
+func (c GozstdCompressor) Name() string { return "Gozstd" }
+func (c GozstdCompressor) Compress(data []byte) ([]byte, error) {
+	return gozstd.Compress(nil, data), nil
+}
+func (c GozstdCompressor) Decompress(data []byte) ([]byte, error) {
+	return gozstd.Decompress(nil, data)
+}
+
+type DataDogZstdCompressorBest struct{}
+
+func (c DataDogZstdCompressorBest) Name() string { return "DataDogZstdBest" }
+func (c DataDogZstdCompressorBest) Compress(data []byte) ([]byte, error) {
+	return ddzstd.CompressLevel(nil, data, ddzstd.BestCompression)
+}
+func (c DataDogZstdCompressorBest) Decompress(data []byte) ([]byte, error) {
+	return ddzstd.Decompress(nil, data)
+}
+
+type DataDogZstdCompressorFastest struct{}
+
+func (c DataDogZstdCompressorFastest) Name() string { return "DataDogZstdFastest" }
+func (c DataDogZstdCompressorFastest) Compress(data []byte) ([]byte, error) {
+	return ddzstd.CompressLevel(nil, data, ddzstd.BestSpeed)
+}
+func (c DataDogZstdCompressorFastest) Decompress(data []byte) ([]byte, error) {
+	return ddzstd.Decompress(nil, data)
+}
+
+type DataDogZstdCompressor struct{}
+
+func (c DataDogZstdCompressor) Name() string { return "DataDogZstd" }
+func (c DataDogZstdCompressor) Compress(data []byte) ([]byte, error) {
+	return ddzstd.CompressLevel(nil, data, ddzstd.DefaultCompression)
+}
+func (c DataDogZstdCompressor) Decompress(data []byte) ([]byte, error) {
+	return ddzstd.Decompress(nil, data)
+}
+
 // Benchmarking
 
 type BenchmarkResult struct {
@@ -948,6 +1010,12 @@ func Run(all bool) {
 		NewZstdFastestCompressor(),
 		NewZstdBestCompressor(),
 		StdSnappyCompressor{},
+		GozstdCompressor{},
+		GozstdCompressorBest{},
+		GozstdCompressorFastest{},
+		DataDogZstdCompressor{},
+		DataDogZstdCompressorBest{},
+		DataDogZstdCompressorFastest{},
 	}
 
 	kValues := []int{1, 5, 100}

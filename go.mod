@@ -32,6 +32,7 @@ require (
 )
 
 require (
+	github.com/DataDog/zstd v1.5.7 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic/loader v0.5.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
@@ -43,6 +44,7 @@ require (
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/segmentio/asm v1.1.3 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
+	github.com/valyala/gozstd v1.24.0 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
