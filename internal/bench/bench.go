@@ -4,6 +4,7 @@ package bench
 
 import (
 	"bytes"
+	"encoding/gob"
 	stdjson "encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -159,6 +160,20 @@ func (m JSONMarshaler) Marshal(v interface{}) ([]byte, error) {
 }
 func (m JSONMarshaler) Unmarshal(data []byte, v interface{}) error {
 	return stdjson.Unmarshal(data, v)
+}
+
+// Implementations: Marshaler
+
+type GOBMarshaler struct{}
+
+func (m GOBMarshaler) Name() string { return "GOB" }
+func (m GOBMarshaler) Marshal(v interface{}) ([]byte, error) {
+	var b bytes.Buffer
+	err := gob.NewEncoder(&b).Encode(v)
+	return b.Bytes(), err
+}
+func (m GOBMarshaler) Unmarshal(data []byte, v interface{}) error {
+	return gob.NewDecoder(bytes.NewBuffer(data)).Decode(v)
 }
 
 type MsgPackMarshaler struct{}
@@ -967,6 +982,7 @@ func Run(all bool) {
 	}
 
 	marshalers := []Marshaler{
+		GOBMarshaler{},
 		JSONMarshaler{},
 		MsgPackMarshaler{},
 		CBORMarshaler{},
@@ -1119,16 +1135,16 @@ func Run(all bool) {
 		fmt.Printf("\nExcluded %d results with speed < 50MB/s\n", excludedResultsCount)
 	}
 
-	fmt.Printf("%-30s | %-10s | %-10s | %-10s | %-10s | %-10s\n", "ID", "Ratio (%)", "Speed", "Ser+Comp", "De+Deser", "Status")
+	fmt.Printf("%-40s | %-10s | %-10s | %-10s | %-10s\n", "ID", "Ratio (%)", "Speed", "Ser+Comp", "De+Deser")
 	fmt.Println(strings.Repeat("-", 90))
 	for _, r := range results {
-		status := "OK"
 		if r.Corrupted {
-			status = "CORRUPTED"
+			fmt.Printf("%-40s | CORRUPTED", r.ID)
+			continue
 		}
 		ratio := float64(r.CompressedSize) / float64(r.OriginalSize) * 100
-		fmt.Printf("%-25s | %-10.2f | %-10.2f | %-10.2f | %-10.2f | %-10s\n",
-			r.ID, ratio, r.SpeedMBs, r.SerCompSpeed, r.DecompDesSpeed, status)
+		fmt.Printf("%-40s | %-10.0f | %-10.0f | %-10.0f | %-10.0f\n",
+			r.ID, ratio, r.SpeedMBs, r.SerCompSpeed, r.DecompDesSpeed)
 	}
 
 }
